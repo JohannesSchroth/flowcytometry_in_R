@@ -9,7 +9,7 @@
 #location of data
 data_dir <- '~/Desktop/WHRI Summer Project 2018/Raw Data + FlowJo + Prism/p-akt/p-AKT 11 10 18 N=2/'
 #directory of gating template .csv file
-gating_dir <- 'extdata/gating_template/G.csv'
+gating_dir <- 'extdata/gating_template/IC p-AKT.csv'
 #location for output files to be saved
 save_dir <- '~/Desktop/'
 #location of markers and channel name data frame containing all names/channels
@@ -91,6 +91,9 @@ raw_data <- read.flowSet(pattern = '.fcs')
 raw_data <- raw_data[grep(pattern = '(^[[:upper:]]{2}\\d{2})', x=sampleNames(raw_data))]
 
 #Set column names
+matches <- cbind(as.character(markers$V1[match(markers_used, markers$V2)]), 
+                 as.character(markers$V2[match(markers_used, markers$V2)]))
+
 colnames(raw_data) <- matches[,2][match(colnames(raw_data), matches[,1])]
 
 #apply compensation to data
@@ -116,11 +119,17 @@ gating_template <- gatingTemplate(system.file(gating_dir, package = 'openCyto'))
 #Create gating set
 data_gs <- GatingSet(processed_data)
 
+
 #apply gating hierarchy to data
-gating(gating_template, dara_gs, mc.cores=2, parallel_type='multicore')
+gating(gating_template, data_gs, mc.cores=2, parallel_type='multicore')
 
+hide_pop <- c('CD4-Pecf594+', 'CD8-PerCP+', 'CD4-Pecf594+CD8-PerCP+', 'CD4-Pecf594-CD8-PerCP-')
 
+lapply(hide_pop, function(thisNode)setNode(data_gs, thisNode, FALSE))
 
-
+pdf(file='/Users/johannesschroth/Desktop/Gating.pdf', height = 6, width = 8.48 )
+plot(gs)
+for (i in 1:length(data_gs)) {plotGate(data_gs[[i]], path=2)}
+dev.off()
 
 
