@@ -18,6 +18,9 @@ marker_dir <- '/Library/Frameworks/R.framework/markers.txt'
 #markers used in staining panel
 markers_used <- c('FSC-A','SSC-A', 'CD27-FITC', 'CD8-PerCP', 'CD4-Pecf594', 'CD45RA-Bv605', 'p-akt-PE')
 
+hide_pop <- c('CD4+', 'CD8+', 'CD4+CD8+', 'CD4-CD8-', 
+              'CD4+CD8-/CD45RA+', 'CD4+CD8-/CD27+', 'CD4-CD8+/CD45RA+', 'CD4-CD8+/CD27+')
+
 
 ##Improting and formatting compensation data----
 
@@ -111,6 +114,8 @@ for (i in 1:length(raw_data_compensated)) {
 
 processed_data <- raw_data_compensated
 
+colnames(processed_data) <- as.character(markers$V3[match(colnames(processed_data), markers$V2)])
+
 #Gating----
 
 #Import Gating template 
@@ -119,17 +124,15 @@ gating_template <- gatingTemplate(system.file(gating_dir, package = 'openCyto'))
 #Create gating set
 data_gs <- GatingSet(processed_data)
 
-
 #apply gating hierarchy to data
 gating(gating_template, data_gs, mc.cores=2, parallel_type='multicore')
-
-hide_pop <- c('CD4-Pecf594+', 'CD8-PerCP+', 'CD4-Pecf594+CD8-PerCP+', 'CD4-Pecf594-CD8-PerCP-')
 
 lapply(hide_pop, function(thisNode)setNode(data_gs, thisNode, FALSE))
 
 pdf(file='/Users/johannesschroth/Desktop/Gating.pdf', height = 6, width = 8.48 )
-plot(gs)
+plot(data_gs)
 for (i in 1:length(data_gs)) {plotGate(data_gs[[i]], path=2)}
 dev.off()
+
 
 
