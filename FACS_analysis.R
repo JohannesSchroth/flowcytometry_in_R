@@ -16,14 +16,8 @@ save_dir <- '~/Desktop/'
 markers_used <- c('FSC-A','SSC-A', 'CD27-FITC', 'CD8-PerCP', 'CD4-Pecf594', 'CD45RA-Bv605', 'p-akt-PE')
 
 #loading required packages
-library(cytofkit)
-library(openCyto)
-library(flowViz)
-library(ggcyto)
-library(gridExtra)
-library(grid)
-library(ggplot2)
-
+packages <- c('cytofkit', 'openCyto', 'flowViz', 'ggcyto', 'gridExtra', 'grid', 'ggplot2')
+lapply(packages, library, character.only=TRUE)
 
 #Improting and formatting compensation data----
 setwd(data_dir)
