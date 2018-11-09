@@ -116,7 +116,7 @@ processed_data <- raw_data_compensated
 
 colnames(processed_data) <- as.character(markers$V3[match(colnames(processed_data), markers$V2)])
 
-#Gating----
+##Gating----
 
 #Import Gating template 
 gating_template <- gatingTemplate(system.file(gating_dir, package = 'openCyto'))
@@ -134,5 +134,10 @@ plot(data_gs)
 for (i in 1:length(data_gs)) {plotGate(data_gs[[i]], path=2)}
 dev.off()
 
+data_gs[[1]]
+
+for (i in 1:length(data_gs)){
+  data[[i]] <- getData(data_gs[i])
+}
 
 
