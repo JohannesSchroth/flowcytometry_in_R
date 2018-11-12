@@ -139,5 +139,7 @@ data_gs[[1]]
 for (i in 1:length(data_gs)){
   CD4_data <- as.matrix(exprs(getData(data_gs[[i]], 'CD4+CD8-')))
 }
+
 CD4_data
+
 str(data)
