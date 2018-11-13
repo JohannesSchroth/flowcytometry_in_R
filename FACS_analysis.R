@@ -127,12 +127,16 @@ data_gs <- GatingSet(processed_data)
 #apply gating hierarchy to data
 gating(gating_template, data_gs, mc.cores=2, parallel_type='multicore')
 
+#hide unwanted populations
 lapply(hide_pop, function(thisNode)setNode(data_gs, thisNode, FALSE))
 
+#print gating hierarchy pdf to desktop
 pdf(file='/Users/johannesschroth/Desktop/Gating.pdf', height = 6, width = 8.48 )
 plot(data_gs)
 for (i in 1:length(data_gs)) {plotGate(data_gs[[i]], path=2)}
 dev.off()
+
+
 
 data_gs[[1]]
 
