@@ -146,4 +146,7 @@ for (i in 1:length(data_gs)){
 
 CD4_data
 
-str(data)
+write.csv(CD4_data, 'CD4_data')
+
+CD4_data <- CD4_data[,c(3,5)]
+
