@@ -82,7 +82,7 @@ for (i in 1:length(compensated_ctrls)) {
   compensated_ctrls[[i]] <- transform(compensated_ctrls[[i]], estimateLogicle(compensated_ctrls[[i]], channels=colnames(compensated_ctrls)))
 }
 
-comp_mat_plot <- print(splom(compensated_ctrls[[1]]))
+comp_mat_plot <- splom(compensated_ctrls[[1]])
 
 ##Organise Sample Data----
 
@@ -128,7 +128,7 @@ lapply(hide_pop, function(thisNode)setNode(data_gs, thisNode, FALSE))
 
 #print gating hierarchy pdf to desktop
 pdf(file='/Users/johannesschroth/Desktop/Gating.pdf', height = 6, width = 8.48 )
-comp_mat_plot
+print(comp_mat_plot)
 plot(data_gs)
 for (i in 1:length(data_gs)) {plotGate(data_gs[[i]], path=2)}
 dev.off()
