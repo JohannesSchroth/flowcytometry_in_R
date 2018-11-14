@@ -127,7 +127,7 @@ gating(gating_template, data_gs, mc.cores=2, parallel_type='multicore')
 lapply(hide_pop, function(thisNode)setNode(data_gs, thisNode, FALSE))
 
 #print gating hierarchy pdf to desktop
-pdf(file='/Users/johannesschroth/Desktop/Gating.pdf', height = 6, width = 8.48 )
+pdf(file='~/Desktop/Gating.pdf', height = 6, width = 8.48 )
 print(comp_mat_plot)
 plot(data_gs)
 for (i in 1:length(data_gs)) {plotGate(data_gs[[i]], path=2)}
