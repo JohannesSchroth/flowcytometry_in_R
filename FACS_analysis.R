@@ -115,7 +115,7 @@ colnames(processed_data) <- as.character(markers$V3[match(colnames(processed_dat
 ##Gating----
 
 #Import Gating template 
-gating_template <- gatingTemplate(system.file(gating_dir, package = 'openCyto'))
+gating_template <- gatingTemplate(gating_dir)
 
 #Create gating set
 data_gs <- GatingSet(processed_data)
