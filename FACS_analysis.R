@@ -3,21 +3,19 @@
 
 ##User Input----
 
-
 #Defining Directories
 
 #location of data
-data_dir <- '~/Desktop/WHRI Summer Project 2018/Raw Data + FlowJo + Prism/p-akt/p-AKT 11 10 18 N=2/'
+data_dir <- '~/Desktop/'
 #directory of gating template .csv file
-gating_dir <- 'extdata/gating_template/IC p-AKT.csv'
+gating_dir <- '.csv'
 #location for output files to be saved
 save_dir <- '~/Desktop/'
 #location of markers and channel name data frame containing all names/channels
-marker_dir <- '/Library/Frameworks/R.framework/markers.txt'
-
+marker_dir <- '/Library/ .txt'
 #markers used in staining panel
 markers_used <- c('FSC-A','SSC-A', 'CD27-FITC', 'CD8-PerCP', 'CD4-Pecf594', 'CD45RA-Bv605', 'p-akt-PE')
-
+#populations to hide in gating hierarchy plot
 hide_pop <- c('CD4+', 'CD8+', 'CD4+CD8+', 'CD4-CD8-', 
               'CD4+CD8-/CD45RA+', 'CD4+CD8-/CD27+', 'CD4-CD8+/CD45RA+', 'CD4-CD8+/CD27+')
 
@@ -25,9 +23,10 @@ hide_pop <- c('CD4+', 'CD8+', 'CD4+CD8+', 'CD4-CD8-',
 ##Improting and formatting compensation data----
 
 #loading required packages
-packages <- c('cytofkit', 'openCyto', 'flowViz', 'ggcyto', 'gridExtra', 'grid', 'ggplot2')
-lapply(packages, library, character.only=TRUE)
+packages_1 <- c('cytofkit', 'openCyto', 'flowViz', 'ggcyto', 'gridExtra', 'grid', 'ggplot2')
+lapply(packages_1, library, character.only=TRUE)
 
+#set working directory
 setwd(data_dir)
 
 #import compensation controls
@@ -48,9 +47,7 @@ chanels <- rbind(as.vector(markers[,1]),as.vector(markers[,2]))
 
 #name samples by their marker
 sampleNames(compensation_data) <- gsub(pattern='(.*)(Unstained)(.*)', replacement = 'UN', x=sampleNames(compensation_data))
-#need to make this line more generic, some sample names have (,1f,) instead
 sampleNames(compensation_data) <- gsub(pattern='(.*\\s)(.*\\s)(.*)(,\\d{1}f,)(\\d*)(.*)', replacement = '\\2\\3/\\5-A', x=sampleNames(compensation_data))
-
 sampleNames(compensation_data) <- chanels[2,][match(sampleNames(compensation_data), chanels[1,])]
 
 #naming metadata
@@ -85,7 +82,7 @@ for (i in 1:length(compensated_ctrls)) {
   compensated_ctrls[[i]] <- transform(compensated_ctrls[[i]], estimateLogicle(compensated_ctrls[[i]], channels=colnames(compensated_ctrls)))
 }
 
-print(splom(compensated_ctrls[[1]]))
+comp_mat_plot <- print(splom(compensated_ctrls[[1]]))
 
 ##Organise Sample Data----
 
@@ -107,13 +104,12 @@ vars <- colnames(raw_data_compensated)
 vars <- vars[-grep('FSC', vars)]
 vars <- vars[-grep('SSC', vars)]
 
-#transfor data on vars channels
+#transfor data on vars channels, using logicle transformation, try others?
 for (i in 1:length(raw_data_compensated)) {
   raw_data_compensated[[i]] <- transform(raw_data_compensated[[i]], estimateLogicle(raw_data_compensated[[i]], channels=vars))
 }
 
 processed_data <- raw_data_compensated
-
 colnames(processed_data) <- as.character(markers$V3[match(colnames(processed_data), markers$V2)])
 
 ##Gating----
@@ -132,21 +128,20 @@ lapply(hide_pop, function(thisNode)setNode(data_gs, thisNode, FALSE))
 
 #print gating hierarchy pdf to desktop
 pdf(file='/Users/johannesschroth/Desktop/Gating.pdf', height = 6, width = 8.48 )
+comp_mat_plot
 plot(data_gs)
 for (i in 1:length(data_gs)) {plotGate(data_gs[[i]], path=2)}
 dev.off()
 
-
+#can now extract gated cell pop data from gating set, for further analysis
+#may be easier to keep using gating set for most analyses, but Rtsne requires data frame
+#example of CD4 data extraction below
 
 data_gs[[1]]
 
-for (i in 1:length(data_gs)){
-  CD4_data <- as.matrix(exprs(getData(data_gs[[i]], 'CD4+CD8-')))
-}
-
+CD4_data <- as.data.frame(exprs(getData(data_gs[[1]], 'CD4+CD8-')))
 CD4_data
 
-write.csv(CD4_data, 'CD4_data')
-
-CD4_data <- CD4_data[,c(3,5)]
-
+#save data as .csv file to not have to re-gate data every time
+setwd(save_dir)
+write.csv(CD4_data, 'CD4 FACS data')
