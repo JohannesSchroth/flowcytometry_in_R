@@ -8,16 +8,17 @@
 #location of data
 data_dir <- '~/Desktop/'
 #directory of gating template .csv file
-gating_dir <- '.csv'
+gating_dir <- '~/Desktop/G.csv'
 #location for output files to be saved
 save_dir <- '~/Desktop/'
 #location of markers and channel name data frame containing all names/channels
-marker_dir <- '/Library/ .txt'
+marker_dir <- '~/Desktop/markers.txt'
 #markers used in staining panel
-markers_used <- c('FSC-A','SSC-A', 'CD27-FITC', 'CD8-PerCP', 'CD4-Pecf594', 'CD45RA-Bv605', 'p-akt-PE')
+markers_used <- c('FSC-A', 'FSC-H', 'FSC-W', 'SSC-A', 'SSC-H', 'SSC-W', 'CD27-FITC', 'CD8-PerCP', 'CD4-Pecf594', 'CD45RA-Bv605', 'CD220-APC')
 #populations to hide in gating hierarchy plot
 hide_pop <- c('CD4+', 'CD8+', 'CD4+CD8+', 'CD4-CD8-', 
-              'CD4+CD8-/CD45RA+', 'CD4+CD8-/CD27+', 'CD4-CD8+/CD45RA+', 'CD4-CD8+/CD27+')
+              'CD4+CD8-/CD45RA+', 'CD4+CD8-/CD27+', 
+              'CD4-CD8+/CD45RA+', 'CD4-CD8+/CD27+')
 
 
 ##Improting and formatting compensation data----
@@ -47,12 +48,13 @@ chanels <- rbind(as.vector(markers[,1]),as.vector(markers[,2]))
 
 #name samples by their marker
 sampleNames(compensation_data) <- gsub(pattern='(.*)(Unstained)(.*)', replacement = 'UN', x=sampleNames(compensation_data))
-sampleNames(compensation_data) <- gsub(pattern='(.*\\s)(.*\\s)(.*)(,\\d{1}f,)(\\d*)(.*)', replacement = '\\2\\3/\\5-A', x=sampleNames(compensation_data))
+sampleNames(compensation_data) <- gsub(pattern='(.*\\s)(.*_)(.*)(,\\d{1}f,)(\\d*)(.*)', replacement = '\\3/\\5-A', x=sampleNames(compensation_data))
 sampleNames(compensation_data) <- chanels[2,][match(sampleNames(compensation_data), chanels[1,])]
+
+compensation_data
 
 #naming metadata
 pData(compensation_data)$name <- sampleNames(compensation_data)
-
 
 ##Calculating Spillover Matrix and plotting transformed data scatter plot----
 
@@ -63,7 +65,7 @@ matc <- na.omit(match(pData(compensation_data)$name, colnames(compensation_data)
 compensation_ctrls <- fsApply(compensation_data, function(ff) ff[,matc])
 
 #extract unstained samples
-unstained_ctrl <- pData(compensation_ctrls)[grep(pattern='UN', x=sampleNames(compensation_ctrls), fixed = T),]
+unstained_ctrl <- grep(pattern='UN', x=sampleNames(compensation_ctrls), fixed = T)
 
 #calculate spillover matrix
 spillover_matrix <- spillover(x = compensation_ctrls,
@@ -76,14 +78,13 @@ compensation_matrix <- compensation(spillover_matrix)
 
 #apply compensation to compensation samples, could do an overlay thing to compare uncompensated w/ compensated
 compensated_ctrls <- compensate(x=compensation_ctrls, compensation_matrix)
-class(compensated_ctrls)
 
 for (i in 1:length(compensated_ctrls)) {
   compensated_ctrls[[i]] <- transform(compensated_ctrls[[i]], estimateLogicle(compensated_ctrls[[i]], channels=colnames(compensated_ctrls)))
 }
 
 comp_mat_plot <- splom(compensated_ctrls[[1]])
-
+comp_mat_plot
 ##Organise Sample Data----
 
 #Import raw data only
@@ -95,7 +96,7 @@ matches <- cbind(as.character(markers$V1[match(markers_used, markers$V2)]),
                  as.character(markers$V2[match(markers_used, markers$V2)]))
 
 colnames(raw_data) <- matches[,2][match(colnames(raw_data), matches[,1])]
-
+raw_data
 #apply compensation to data
 raw_data_compensated <- compensate(raw_data, compensation_matrix)
 
@@ -108,13 +109,27 @@ vars <- vars[-grep('SSC', vars)]
 for (i in 1:length(raw_data_compensated)) {
   raw_data_compensated[[i]] <- transform(raw_data_compensated[[i]], estimateLogicle(raw_data_compensated[[i]], channels=vars))
 }
-
 processed_data <- raw_data_compensated
 colnames(processed_data) <- as.character(markers$V3[match(colnames(processed_data), markers$V2)])
 
+##Quality Asessment----
+
+raw_data_compensated[[1]]
+
+library(Biobase)
+
+processed_data[[1]]
+
+for (i in 1:length(processed_data)){
+  data <- AnnotatedDataFrame(as.data.frame(exprs(processed_data[[i]])))
+}
+
+#Need to find way to annotate data frame names
+
+
 ##Gating----
 
-#Import Gating template 
+#Import Gating template
 gating_template <- gatingTemplate(gating_dir)
 
 #Create gating set
@@ -133,15 +148,16 @@ plot(data_gs)
 for (i in 1:length(data_gs)) {plotGate(data_gs[[i]], path=2)}
 dev.off()
 
+data_gs[[17]]
+
 #can now extract gated cell pop data from gating set, for further analysis
 #may be easier to keep using gating set for most analyses, but Rtsne requires data frame
 #example of CD4 data extraction below
 
-data_gs[[1]]
+singlets_1 <- as.data.frame(exprs(getData(data_gs[[17]], 'singlets')))
 
-CD4_data <- as.data.frame(exprs(getData(data_gs[[1]], 'CD4+CD8-')))
-CD4_data
 
 #save data as .csv file to not have to re-gate data every time
 setwd(save_dir)
-write.csv(CD4_data, 'CD4 FACS data')
+write.csv(singlets_1, 'singlets_1')
+
