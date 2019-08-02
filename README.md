@@ -10,3 +10,5 @@ reading of .fcs files uses regex which may not fit all file names, user has to s
 'markers' is a .txt matrix with raw data .fcs file colnames in first column and desired names in second column
 gating template needs to be a .csv file in this format: https://bioconductor.org/packages/devel/bioc/vignettes/openCyto/inst/doc/HowToWriteCSVTemplate.html
 See the following link for further details: https://www.bioconductor.org/packages/release/bioc/vignettes/openCyto/inst/doc/openCytoVignette.html
+
+See session info tab for citation of all packages used in the flow cytometry and statistical analysis.
